@@ -1,4 +1,4 @@
-# Virtual UNICORE cluster (VALET) on demand
+# Virtual UNICORE cluster (VALET) on demand using local IPs for the worker nodes
 Creating a virtual cluster on demand in an OpenStack environment including a UNICORE instance.
 
 ## Software Stack
