@@ -43,10 +43,6 @@ variable "openstack_key_name" {
   default = "maximilian-demo"
 }
 
-/*variable "public_key" {
-  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGCoCJq3YLZSSIQWp9E8lHoS2Uyls66498ZcEqxJIGEP6gu+W9AAw7x0FBGlvnoHAw1wEsMbcihrTVLlU0r2VKtNVdvW26ACB01Y663IsiqrgtWChmLEWxOJE/8k3F+ZQ8aIjfYWr4O33IBItr32OP3lka/3wrLqOYh27JUcc3hvo+4KNdYoEso/P2bvvrL3jU/obB5iCtpI3QHpnA3fEHCuLK6A0J13cedcNJTWnm1O8aLo0NPdimqB4I82e1WfdflabJCVQjuWjA224zNakNdxa7T11aQJjJWKWLNL5nKrM+sjeUpcKzNeMDTIrPQpF/mqqkEM/sRgDKPgYZ/uqf"
-}*/
-
 variable "private_key_path" {
   default = "/home/mhanussek/Zertifikate/maximilian-demo.pem"
 }
@@ -57,15 +53,29 @@ variable "name_prefix" {
 
 variable "security_groups" {
   default = [
-    "virtual-unicore-cluster-public"
+    "virtual-unicore-cluster-public-local-ip"
   ]
 }
 
-variable "network" {
+variable "network_master" {
+  default = "denbi_uni_tuebingen_external"
+}
+
+
+variable "network_master_local" {
+  default = "testint"
+}
+
+variable "network_compute" {
   default = [
     {
-      name = "denbi_uni_tuebingen_external"
+      name = "testint"
     },
-  ]
-}
+]
+} 
+
+
+
+
+
 
