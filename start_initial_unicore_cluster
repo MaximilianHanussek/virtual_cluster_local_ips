@@ -11,7 +11,8 @@
 #============================================================================================================================================================================
 
 SSH_KEY_PATH="/home/centos/.ssh/connection_key.pem"									#Get path to SSH key of compute nodes	
-MASTER_NODE_IP="$(cat /etc/hosts | grep master | awk {'print $1'})"							#Get master node IP (unicore-master)
+MASTER_NODE_IP_LOCAL="$(cat /etc/hosts | grep "master$" | awk {'print $1'})"							#Get master node IP local (unicore-master)
+MASTER_NODE_IP_PUBLIC="$(cat /etc/hosts | grep master-public | awk {'print $1'})"                                                 #Get master node IP public (unicore-master)
 NODES_MAX="$(cat /etc/hosts | grep -c compute)"										#Get the maximal number of nodes in the cluster
 NODE_CPUS_MAX=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@unicore-compute-node-0 nproc)	#Get maximal number of CPUs per node
 TOTAL_CPUS_MAX="$(expr $NODE_CPUS_MAX \* $NODES_MAX)"									#Get number of CPUs of total cluster
@@ -24,19 +25,25 @@ NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                  
 echo "Configure hostfiles"
 cat /etc/hosts | awk '{print $1}' > /home/centos/host_ip_list                           #Get the list of all known nodes on the masternode
 
+echo "Add connection_key to authorized_keys file"
+ssh-keygen -y -f ~/.ssh/connection_key.pem >> /home/centos/.ssh/authorized_keys
+
 if [ -s /home/centos/beeond_nodefile ];                                                 #Check if beeond_nodefile has already data in it
 then
 	> /home/centos/beeond_nodefile                                                      #If yes, overwrite old data
 fi
 
 while read host_ip; do                                                                  #Iterate over all IPs of the list generated above
-        if ! [[ $host_ip == "127.0.0.1" || $host_ip == "::1" || $host_ip == "" ]];      #Exclude uninteresting stuff from the hosts file 
+        if ! [[ $host_ip == "127.0.0.1" || $host_ip == "::1" || $host_ip == "" || $host_ip == "$MASTER_NODE_IP_PUBLIC" ]];      #Exclude uninteresting stuff from the hosts file 
         then
                 NODE_NAME=$(grep $host_ip /etc/hosts | awk '{print $2}')                #Parse out the hostname to the corresponding IP
                 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip NODE_NAME=$NODE_NAME "sudo hostnamectl set-hostname $NODE_NAME" #Set hostname permanently
                 scp -i $SSH_KEY_PATH /etc/hosts centos@$host_ip:/home/centos            #Copy /etc/hosts file from masternode to home directory of new node
                 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mv /home/centos/hosts /etc/hosts   # replace old hosts file with new file, two steps are necessary to permissions
 		echo $host_ip >> /home/centos/beeond_nodefile                                   #Add host IP to beeond_nodefile to later start beeond
+                ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mkfs.xfs /dev/vdb		#Create XFS filesystem on compute nodes cinder volume
+		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo sudo mount /dev/vdb /mnt/  	#Mount cinder volume to /mnt/
+                ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo sudo chmod 777 /mnt/		#Change permissions of /mnt/ directory
         fi
 done </home/centos/host_ip_list                                                         #Give file as input for the loop
 rm -f /home/centos/host_ip_list                                                         #Delete generated host_ip_list
@@ -49,7 +56,7 @@ beeond start -f /opt/beegfs/sbin -n /home/centos/beeond_nodefile -d /mnt/ -c /be
 
 ### Add nodes to torque cluster ###
 echo "Starting torque cluster system"
-cat /etc/hosts | awk '{print $2}' > /home/centos/host_name_list                		#Get the list of all known nodes on the masternode
+cat /etc/hosts | grep "unicore-compute" | awk '{print $2}' > /home/centos/host_name_list                		#Get the list of all known nodes on the masternode
 
 sudo systemctl enable pbs_server                                                    #Enable torque pbs_server component
 sudo systemctl start pbs_server                                                     #Start torque pbs_server component
@@ -58,12 +65,9 @@ sudo systemctl start trqauthd                                                   
 sudo env "PATH=$PATH" pbs_sched                                                     #Start pbs_sched (Scheduler) component
 
 while read host_name; do                                                            #Iterate over the list of hostnames
-	if ! [[ $host_name == "localhost" || $host_name == "unicore-master" || $host_name == "" ]];	#Exclude uninteresting stuff from the hosts file 
-	then
 		sudo env "PATH=$PATH" qmgr -c "create node $host_name"		   	                                    #Add node to the cluster
 		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_name sudo systemctl enable pbs_mom #Enable torque pbs_mom component on compute nodes
 		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_name sudo systemctl start pbs_mom  #Start torque pbs_mom component on compute nodes
-	fi
 done </home/centos/host_name_list                                                   #Give file as input for the loop
 rm -f /home/centos/host_name_list                                                   #Delete generated host_ip_list
 
@@ -71,5 +75,5 @@ sudo env "PATH=$PATH" qmgr -c "set server auto_node_np = True"                  
 
 
 ### Configure and Start UNICORE components ###
-echo "Configuring and starting UNICORE component"
-sh configure_unicore $MASTER_NODE_IP $TOTAL_CPUS_MAX $NODE_CPUS_MAX $NODE_MEM_MAX $NODES_MAX
+echo "Configuring and starting UNICORE components"
+sh configure_unicore $MASTER_NODE_IP_LOCAL $TOTAL_CPUS_MAX $NODE_CPUS_MAX $NODE_MEM_MAX $NODES_MAX $MASTER_NODE_IP_PUBLIC

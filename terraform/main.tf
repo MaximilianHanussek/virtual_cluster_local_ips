@@ -67,7 +67,7 @@ block_device {
   }
 
 
-  /*provisioner "file" {
+  provisioner "file" {
     content = "${tls_private_key.internal_connection_key.private_key_pem}"
     destination = "~/.ssh/connection_key.pem"  
   
@@ -80,7 +80,7 @@ block_device {
   } 
 
   provisioner "remote-exec" {
-    script = "public_key_to_authorized_key_file.sh"
+    script = "set_internal_private_key_permissions.sh"
 
     connection {
       type        = "ssh"
@@ -92,7 +92,8 @@ block_device {
 
   provisioner "remote-exec" {
     inline = [
-      "echo '${openstack_compute_instance_v2.master.access_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
+      "echo '${openstack_compute_instance_v2.master.access_ip_v4} ${var.name_prefix}master-public' >> /etc/hosts",
+      "echo '${openstack_compute_instance_v2.master.network.1.fixed_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.0.access_ip_v4} ${var.name_prefix}compute-node-0' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.1.access_ip_v4} ${var.name_prefix}compute-node-1' >> /etc/hosts"
     ]
@@ -140,7 +141,7 @@ block_device {
       user        = "centos"
       timeout     = "5m"
     }
-  }*/
+  }
 }
 
 
@@ -149,7 +150,7 @@ resource "openstack_compute_instance_v2" "compute" {
   name            = "${var.name_prefix}compute-node-${count.index}"
   flavor_name     = "${var.flavors["compute"]}"
   image_id        = "${openstack_images_image_v2.vuc-image-compute.id}"
-  key_pair        = "${var.openstack_key_name}"
+  key_pair        = "vuc_internal_key"
   security_groups = "${var.security_groups}"
   network         = "${var.network_compute}"
 
@@ -168,38 +169,4 @@ block_device {
     boot_index            = -1
     delete_on_termination = true
   }
-  
-/*  provisioner "remote-exec" {
-    script = "mount_cinder_volumes.sh"
-    
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }
-
-  provisioner "file" {
-    content     = "${tls_private_key.internal_connection_key.private_key_pem}"
-    destination = "~/.ssh/connection_key.pem"
-    
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }
-  
-  provisioner "remote-exec" {
-    script = "public_key_to_authorized_key_file.sh"
-    
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }*/
 }

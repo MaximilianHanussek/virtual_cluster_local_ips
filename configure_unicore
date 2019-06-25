@@ -6,20 +6,21 @@
 #date            :2019-06-19
 #version         :1.2
 #usage           :sh configure_unicore MASTER_NODE_IP TOTAL_CPUS_MAX NODE_CPUS_MAX NODE_MEM_MAX NODES_MAX
-#notes           :Needs five parameter: IP of the master node, Sum of total CPUs, Maximum of CPUs per node, Maximum of RAM per node (in Bytes), Maximum number of nodes
+#notes           :Needs six parameter: Local IP of the master node, Sum of total CPUs, Maximum of CPUs per node, Maximum of RAM per node (in Bytes), Maximum number of nodes, Public IP of master node
 #bash_version    :4.2.46(1)-release
 #============================================================================================================================================================================
 
-MASTER_NODE_IP=$1                                                                       #Get master node IP (unicore-master)
+MASTER_NODE_IP_LOCAL=$1                                                                 #Get local master node IP (unicore-master)
 TOTAL_CPUS_MAX=$2                                                                       #Get number of CPUs of total cluster
 NODE_CPUS_MAX=$3                                                                        #Get maximal number of CPUs per node
 NODE_MEM_MAX=$4                                                                         #Get maximal number of RAM per node (in Bytes!)
 NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                          #Set value of maximal RAM per node also as default
 NODES_MAX=$5                                                                            #Get the maximal number of nodes in the cluster
+MASTER_NODE_IP_PUBLIC=$6								#Get public master node IP (unicore-master-public)
 
-REGISTRY_URL="https://$MASTER_NODE_IP:8080/REGISTRY/services/Registry?res=default_registry" #Set Registry URL accessing cluster from outside
-WORKFLOW_GATEWAY="https://$MASTER_NODE_IP:8098"                                             #Set Workflow gateway URL
-SERVORCH_GATEWAY="https://$MASTER_NODE_IP:7701"                                             #Set Serverorchestration gateway URL
+REGISTRY_URL="https://$MASTER_NODE_IP_PUBLIC:8080/REGISTRY/services/Registry?res=default_registry" #Set Registry URL accessing cluster from outside
+WORKFLOW_GATEWAY="https://$MASTER_NODE_IP_PUBLIC:8098"                                             #Set Workflow gateway URL
+SERVORCH_GATEWAY="https://$MASTER_NODE_IP_PUBLIC:7701"                                             #Set Serverorchestration gateway URL
 
 PROPERTIES_FILE_SERVER=/usr/local/unicore-servers-7.9.0/configure.properties                #Set path to UNICORE servers configuration file
 PROPERTIES_FILE_WORKFLOW=/usr/local/unicore-workflow-7.9.1/configure.properties             #Set path to UNICORE workflow configuration file
@@ -28,27 +29,27 @@ ADDUSER_FILE=/usr/local/unicore-servers-7.9.0/adduser.sh			            #Set path
 
 ### UNICORE SERVER CONFIGURATION ###
 #Set the correct configvalues in the corresponding configuration file#
-sudo sed -i "/^gwHost=/c\gwHost=$MASTER_NODE_IP" $PROPERTIES_FILE_SERVER
-sudo sed -i "/^uxHost=/c\uxHost=$MASTER_NODE_IP" $PROPERTIES_FILE_SERVER
+sudo sed -i "/^gwHost=/c\gwHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_SERVER
+sudo sed -i "/^uxHost=/c\uxHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_SERVER
 sudo sed -i "/^uxTotalCPUsMax=/c\uxTotalCPUsMax=$TOTAL_CPUS_MAX" $PROPERTIES_FILE_SERVER
 sudo sed -i "/^uxCPUsPerNodeMax=/c\uxCPUsPerNodeMax=$NODE_CPUS_MAX" $PROPERTIES_FILE_SERVER
 sudo sed -i "/^uxMemoryPerNodeMax=/c\uxMemoryPerNodeMax=$NODE_MEM_MAX" $PROPERTIES_FILE_SERVER
 sudo sed -i "/^uxMemoryPerNodeDefault=/c\uxMemoryPerNodeDefault=$NODE_MEM_DEFAULT" $PROPERTIES_FILE_SERVER
 sudo sed -i "/^uxNodesMax/c\uxNodesMax=$NODES_MAX" $PROPERTIES_FILE_SERVER
-sudo sed -i "/^tsiHost=/c\tsiHost=$MASTER_NODE_IP" $PROPERTIES_FILE_SERVER
-sudo sed -i "/^xuudbHost=/c\xuudbHost=$MASTER_NODE_IP" $PROPERTIES_FILE_SERVER
-sudo sed -i "/^registryHost=/c\registryHost=$MASTER_NODE_IP" $PROPERTIES_FILE_SERVER
+sudo sed -i "/^tsiHost=/c\tsiHost=$MASTER_NODE_IP_LOCAL" $PROPERTIES_FILE_SERVER
+sudo sed -i "/^xuudbHost=/c\xuudbHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_SERVER
+sudo sed -i "/^registryHost=/c\registryHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_SERVER
 
 ### UNICORE WORKFLOW CONFIGURATION ###
 #Set the correct configvalues in the corresponding configuration file#
-sudo sed -i "/^gwHost=/c\gwHost=$MASTER_NODE_IP" $PROPERTIES_FILE_WORKFLOW
-sudo sed -i "/^wfHost=/c\wfHost=$MASTER_NODE_IP" $PROPERTIES_FILE_WORKFLOW
-sudo sed -i "/^soHost=/c\soHost=$MASTER_NODE_IP" $PROPERTIES_FILE_WORKFLOW
+sudo sed -i "/^gwHost=/c\gwHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_WORKFLOW
+sudo sed -i "/^wfHost=/c\wfHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_WORKFLOW
+sudo sed -i "/^soHost=/c\soHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_WORKFLOW
 sudo sed -i "/^urlExternalRegistry=/c\urlExternalRegistry=$REGISTRY_URL" $PROPERTIES_FILE_WORKFLOW
-sudo sed -i "/^xuudbHost=/c\xuudbHost=$MASTER_NODE_IP" $PROPERTIES_FILE_WORKFLOW
+sudo sed -i "/^xuudbHost=/c\xuudbHost=$MASTER_NODE_IP_PUBLIC" $PROPERTIES_FILE_WORKFLOW
 
-cd /usr/local/unicore-servers-7.9.0/            #Change into unicore-servers directory
-sudo ./configure.py unicore $MASTER_NODE_IP     #Run configure.py script
+cd /usr/local/unicore-servers-7.9.0/               	#Change into unicore-servers directory
+sudo ./configure.py unicore $MASTER_NODE_IP_PUBLIC     	#Run configure.py script
 
 ### Make UNICORE server component aware of the workflow component ###
 sudo -u unicore bash -c "echo 'WORKFLOW = $WORKFLOW_GATEWAY' >> $PROPERTIES_FILE_CONNECTIONS_GATEWAY" 

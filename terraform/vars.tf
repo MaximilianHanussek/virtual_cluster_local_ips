@@ -73,9 +73,3 @@ variable "network_compute" {
     },
 ]
 } 
-
-
-
-
-
-
