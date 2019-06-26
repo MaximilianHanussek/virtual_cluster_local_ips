@@ -1,36 +1,36 @@
 #!/bin/bash
 #title           :start_initial_unicore_cluster
-#description     :This script will configure and start the initial unicore cluster
+#description     :This script will configure and start the initial unicore cluster with private IPs for the worker nodes
 #author          :Maximilian Hanussek
-#date            :2019-06-19
-#version         :1.2
-#usage           :sh start_initial_unicore_cluster SSH_KEY_PATH MASTER_NODE_IP TOTAL_CPUS_MAX NODE_CPUS_MAX NODE_MEM_MAX NODES_MAX
-#notes           :Needs six parameter: Path to the SSH key of the compute nodes, IP of the master node, Sum of total CPUs, Maximum of CPUs per node,
-#notes           :Maximum of RAM per node (in Bytes), Maximum number of nodes
+#date            :2019-06-26
+#version         :1.3
+#usage           :sh start_initial_unicore_cluster SSH_KEY_PATH MASTER_NODE_IP_LOCAL MASTER_NODE_IP_PUBLIC NODES_MAX NODE_CPUS_MAX TOTAL_CPU_MAX NODE_MEM_MAX
+#notes           :Needs seven parameters which will be generated automatically: Path to the SSH key of the compute nodes, IP of the master node, Sum of total CPUs, Maximum of CPUs per node,
+#notes           :Maximum of RAM per node (in Bytes)
 #bash_version    :4.2.46(1)-release
 #============================================================================================================================================================================
 
-SSH_KEY_PATH="/home/centos/.ssh/connection_key.pem"									#Get path to SSH key of compute nodes	
-MASTER_NODE_IP_LOCAL="$(cat /etc/hosts | grep "master$" | awk {'print $1'})"							#Get master node IP local (unicore-master)
-MASTER_NODE_IP_PUBLIC="$(cat /etc/hosts | grep master-public | awk {'print $1'})"                                                 #Get master node IP public (unicore-master)
-NODES_MAX="$(cat /etc/hosts | grep -c compute)"										#Get the maximal number of nodes in the cluster
+SSH_KEY_PATH="/home/centos/.ssh/connection_key.pem"								#Get path to SSH key of compute nodes	
+MASTER_NODE_IP_LOCAL="$(cat /etc/hosts | grep "master$" | awk {'print $1'})"				 	#Get master node IP local (unicore-master)
+MASTER_NODE_IP_PUBLIC="$(cat /etc/hosts | grep master-public | awk {'print $1'})"                               #Get master node IP public (unicore-master)
+NODES_MAX="$(cat /etc/hosts | grep -c compute)"									#Get the maximal number of nodes in the cluster
 NODE_CPUS_MAX=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@unicore-compute-node-0 nproc)	#Get maximal number of CPUs per node
-TOTAL_CPUS_MAX="$(expr $NODE_CPUS_MAX \* $NODES_MAX)"									#Get number of CPUs of total cluster
+TOTAL_CPUS_MAX="$(expr $NODE_CPUS_MAX \* $NODES_MAX)"								#Get number of CPUs of total cluster
 NODE_MEM_TOTAL=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@unicore-compute-node-0 free -b | grep "Mem:" | awk {'print $2'})	#Get maximal number of RAM per node (in Bytes!)
-ONE_GB_IN_BYTE=1073741824												#Save value for 1GB in Bytes (Base 1024)
-NODE_MEM_MAX="$(expr $NODE_MEM_TOTAL - $ONE_GB_IN_BYTE)"									#Get final max RAM value with 1GB safety
-NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                          				#Set value of maximal RAM per node also as default
+ONE_GB_IN_BYTE=1073741824											#Save value for 1GB in Bytes (Base 1024)
+NODE_MEM_MAX="$(expr $NODE_MEM_TOTAL - $ONE_GB_IN_BYTE)"							#Get final max RAM value with 1GB safety
+NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                          			#Set value of maximal RAM per node also as default
 
-### Configure hostfiles and beeond_file ###
+### Configure hostfiles, authorized_keys file and beeond_file ###
 echo "Configure hostfiles"
 cat /etc/hosts | awk '{print $1}' > /home/centos/host_ip_list                           #Get the list of all known nodes on the masternode
 
 echo "Add connection_key to authorized_keys file"
-ssh-keygen -y -f ~/.ssh/connection_key.pem >> /home/centos/.ssh/authorized_keys
+ssh-keygen -y -f ~/.ssh/connection_key.pem >> /home/centos/.ssh/authorized_keys		#Generate public key from temporary connection key and to authorized key file of master
 
 if [ -s /home/centos/beeond_nodefile ];                                                 #Check if beeond_nodefile has already data in it
 then
-	> /home/centos/beeond_nodefile                                                      #If yes, overwrite old data
+	> /home/centos/beeond_nodefile                                                  #If yes, overwrite old data
 fi
 
 while read host_ip; do                                                                  #Iterate over all IPs of the list generated above
@@ -56,7 +56,7 @@ beeond start -f /opt/beegfs/sbin -n /home/centos/beeond_nodefile -d /mnt/ -c /be
 
 ### Add nodes to torque cluster ###
 echo "Starting torque cluster system"
-cat /etc/hosts | grep "unicore-compute" | awk '{print $2}' > /home/centos/host_name_list                		#Get the list of all known nodes on the masternode
+cat /etc/hosts | grep "unicore-compute" | awk '{print $2}' > /home/centos/host_name_list                #Get the list of all known nodes on the masternode
 
 sudo systemctl enable pbs_server                                                    #Enable torque pbs_server component
 sudo systemctl start pbs_server                                                     #Start torque pbs_server component
@@ -65,7 +65,7 @@ sudo systemctl start trqauthd                                                   
 sudo env "PATH=$PATH" pbs_sched                                                     #Start pbs_sched (Scheduler) component
 
 while read host_name; do                                                            #Iterate over the list of hostnames
-		sudo env "PATH=$PATH" qmgr -c "create node $host_name"		   	                                    #Add node to the cluster
+		sudo env "PATH=$PATH" qmgr -c "create node $host_name"		   	                            #Add node to the cluster
 		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_name sudo systemctl enable pbs_mom #Enable torque pbs_mom component on compute nodes
 		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_name sudo systemctl start pbs_mom  #Start torque pbs_mom component on compute nodes
 done </home/centos/host_name_list                                                   #Give file as input for the loop
