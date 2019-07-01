@@ -28,9 +28,8 @@
     timeout: 300
 
 - name: Install packages
-  with_items: "{{ common_packages | mandatory }}"
   yum:
-    name: "{{ item }}"
+    name: "{{ common_packages | mandatory }}"
     state: latest
     disable_gpg_check: 1
   become: yes
@@ -46,14 +45,20 @@
   command: chown centos:centos /etc/hosts
   become: yes
 
+- name: Remove beeond_nodefile from home directory (unneccessary)
+  command: rm -f /home/centos/beeond_nodefile
 
 - name: Copy torque-package-mom-linux-x86_64.sh to remote host
   copy:
     src: torque-package-mom-linux-x86_64.sh
     dest: /home/centos/torque-package-mom-linux-x86_64.sh
 
+#- name: Trigger torque mom installation
+#  shell: sudo su - root -c "sh /home/centos/torque-package-mom-linux-x86_64.sh --install"
+
 - name: Trigger torque mom installation
-  shell: sudo su - root -c "sh /home/centos/torque-package-mom-linux-x86_64.sh --install"
+  command: sh /home/centos/torque-package-mom-linux-x86_64.sh --install
+  become: yes
 
 - name: Set TORQUE server name to unicore-master
   lineinfile:

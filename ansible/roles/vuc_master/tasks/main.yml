@@ -168,11 +168,19 @@
     remote_src: yes
   become: yes
 
-- name: Download and unarchive UNICORE-workflow component
+- name: Download UNICORE-workflow component
   unarchive:
     src: https://s3.denbi.uni-tuebingen.de/max/unicore-workflow-7.9.1.tgz
     dest: "/usr/local/"
     remote_src: yes
+  become: yes
+
+- name: Unarchive UNICORE-workflow component
+  command: tar -xf /usr/local/unicore-workflow-7.9.1.tgz
+  become: yes
+
+- name: Delete UNICORE-workflow component archive
+  command: rm /usr/local/unicore-workflow-7.9.1.tgz
   become: yes
 
 - name: Change permissions of unicore-servers-7.9.0 directory

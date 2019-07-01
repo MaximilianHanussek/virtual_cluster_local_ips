@@ -90,19 +90,6 @@ block_device {
     }
   }
 
-/*  provisioner "remote-exec" {
-    inline = [
-      "sudo chown centos:centos /etc/hosts"
-    ]
- 
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }*/
-
   provisioner "remote-exec" {
     inline = [
       "echo '${openstack_compute_instance_v2.master.access_ip_v4} ${var.name_prefix}master-public' >> /etc/hosts",
@@ -119,11 +106,11 @@ block_device {
     }
   }
   
-  provisioner "file" {
+/*  provisioner "file" {
     source = "../torque-package-mom-linux-x86_64.sh"
     destination = "/home/centos/torque-package-mom-linux-x86_64.sh"
 
-    connection {
+    connection {i
       type        = "ssh"
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
@@ -133,6 +120,8 @@ block_device {
 
   provisioner "remote-exec" {
     inline = [
+      "scp -i /home/centos/.ssh/connection_key.pem /home/centos/torque-package-mom-linux-x86_64.sh centos@${openstack_compute_instance_v2.compute.0.access_ip_v4}:/home/centos/torque-package-mom-linux-x86_64.sh"
+      "scp -i /home/centos/.ssh/connection_key.pem /home/centos/torque-package-mom-linux-x86_64.sh centos@${openstack_compute_instance_v2.compute.1.access_ip_v4}:/home/centos/torque-package-mom-linux-x86_64.sh"
       "sudo chmod 755 /home/centos/torque-package-mom-linux-x86_64.sh",
       "sudo sh /home/centos/torque-package-mom-linux-x86_64.sh --install",
       "sudo chmod 777 /var/spool/torque/server_name",
@@ -151,7 +140,7 @@ block_device {
       user        = "centos"
       timeout     = "5m"
     }
-  }
+  }*/
 
   provisioner "file" {
     source = "../configure_unicore"
@@ -177,7 +166,6 @@ block_device {
     }
   }
 
- 
   provisioner "remote-exec" {
     inline = [
       "sudo mv /home/centos/configure_unicore /usr/local/bin/configure_unicore",
@@ -196,6 +184,7 @@ block_device {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo rm -rf /home/centos/tpackages/",
       "start_initial_unicore_cluster"
     ]
 
