@@ -106,42 +106,6 @@ block_device {
     }
   }
   
-/*  provisioner "file" {
-    source = "../torque-package-mom-linux-x86_64.sh"
-    destination = "/home/centos/torque-package-mom-linux-x86_64.sh"
-
-    connection {i
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "scp -i /home/centos/.ssh/connection_key.pem /home/centos/torque-package-mom-linux-x86_64.sh centos@${openstack_compute_instance_v2.compute.0.access_ip_v4}:/home/centos/torque-package-mom-linux-x86_64.sh"
-      "scp -i /home/centos/.ssh/connection_key.pem /home/centos/torque-package-mom-linux-x86_64.sh centos@${openstack_compute_instance_v2.compute.1.access_ip_v4}:/home/centos/torque-package-mom-linux-x86_64.sh"
-      "sudo chmod 755 /home/centos/torque-package-mom-linux-x86_64.sh",
-      "sudo sh /home/centos/torque-package-mom-linux-x86_64.sh --install",
-      "sudo chmod 777 /var/spool/torque/server_name",
-      "echo unicore-master > /var/spool/torque/server_name",
-      "sudo chmod 644 /var/spool/torque/server_name",
-      "sudo touch /var/spool/torque/mom_priv/config",
-      "sudo chmod 777 /var/spool/torque/mom_priv/config",
-      "echo $pbsserver unicore-master >> /var/spool/torque/mom_priv/config",
-      "echo $usecp *:/beeond  /beeond >> /var/spool/torque/mom_priv/config",
-      "sudo chmod 644 /var/spool/torque/mom_priv/config"
-    ]
-  
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-    }
-  }*/
-
   provisioner "file" {
     source = "../configure_unicore"
     destination = "/home/centos/configure_unicore"
