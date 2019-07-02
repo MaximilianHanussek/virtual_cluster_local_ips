@@ -21,8 +21,8 @@ variable "compute_node_count" {
 variable "image_master" {
   type = "map"
   default = {
-    "name" = "unicore_master_centos_20190628"
-    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_master_centos_20190628.qcow2"
+    "name" = "unicore_master_centos_20190702"
+    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_master_centos_20190702.qcow2"
     "container_format" = "bare"
     "disk_format" = "qcow2"
    }

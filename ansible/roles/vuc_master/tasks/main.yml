@@ -43,9 +43,9 @@
 
 
 - name: Install packages
-  with_items: "{{ common_packages | mandatory }}"
+  #with_items: "{{ common_packages | mandatory }}"
   yum:
-    name: "{{ item }}"
+    name: "{{ common_packages | mandatory }}"
     state: latest
     disable_gpg_check: 1
   become: yes
@@ -175,13 +175,12 @@
     remote_src: yes
   become: yes
 
-- name: Unarchive UNICORE-workflow component
-  command: tar -xf /usr/local/unicore-workflow-7.9.1.tgz
-  become: yes
+#- name: Unarchive UNICORE-workflow component
+#  command: tar -xf /usr/local/unicore-workflow-7.9.1.tgz
+#  become: yes
 
-- name: Delete UNICORE-workflow component archive
-  command: rm /usr/local/unicore-workflow-7.9.1.tgz
-  become: yes
+#- name: Delete UNICORE-workflow component archive
+#  command: rm /usr/local/unicore-workflow-7.9.1.tgz
 
 - name: Change permissions of unicore-servers-7.9.0 directory
   command: chmod 777 /usr/local/unicore-servers-7.9.0
