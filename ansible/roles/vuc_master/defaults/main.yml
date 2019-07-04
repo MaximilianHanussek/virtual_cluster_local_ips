@@ -6,6 +6,7 @@ common_packages:
   - wget
   - htop
   - java
+  - bc
   - libxml2-devel
   - boost-devel
   - openssl-devel
