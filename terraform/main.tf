@@ -52,6 +52,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host	  = "${self.access_ip_v4}"
     }
   }
 
@@ -63,6 +64,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
 
@@ -76,6 +78,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   } 
 
@@ -87,6 +90,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
 
@@ -103,9 +107,36 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
-  
+ 
+  provisioner "file" {
+    source = "../beeond"
+    destination = "/home/centos/beeond"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../beegfs-ondemand-stoplocal"
+    destination = "/home/centos/beegfs-ondemand-stoplocal"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
   provisioner "file" {
     source = "../configure_unicore"
     destination = "/home/centos/configure_unicore"
@@ -115,6 +146,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
  
@@ -127,13 +159,18 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mv /home/centos/beeond /opt/beegfs/sbin/beeond",
+      "sudo mv /home/centos/beegfs-ondemand-stoplocal /opt/beegfs//lib/beegfs-ondemand-stoplocal",
       "sudo mv /home/centos/configure_unicore /usr/local/bin/configure_unicore",
       "sudo mv /home/centos/start_initial_unicore_cluster /usr/local/bin/start_initial_unicore_cluster",
+      "sudo chmod 777 /opt/beegfs/sbin/beeond",
+      "sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal",
       "sudo chmod 777 /usr/local/bin/configure_unicore",
       "sudo chmod 777 /usr/local/bin/start_initial_unicore_cluster"
     ]
@@ -143,6 +180,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
 
@@ -157,6 +195,7 @@ block_device {
       private_key = "${file(var.private_key_path)}"
       user        = "centos"
       timeout     = "5m"
+      host        = "${self.access_ip_v4}"
     }
   }
 }
@@ -169,7 +208,9 @@ resource "openstack_compute_instance_v2" "compute" {
   image_id        = "${openstack_images_image_v2.vuc-image-compute.id}"
   key_pair        = "vuc_internal_key"
   security_groups = "${var.security_groups}"
-  network         = "${var.network_compute}"
+  network {
+    name = "${var.network_compute}"
+  }
 
 block_device {
     uuid                  = "${openstack_images_image_v2.vuc-image-compute.id}"
@@ -180,7 +221,8 @@ block_device {
   }
 
 block_device {
-    uuid		  = "${count.index != "0" ? "${openstack_blockstorage_volume_v2.beeond_volume_compute.1.id}" : "${openstack_blockstorage_volume_v2.beeond_volume_compute.0.id}"}"
+#    uuid		  = "${count.index != "0" ? "${openstack_blockstorage_volume_v2.beeond_volume_compute.1.id}" : "${openstack_blockstorage_volume_v2.beeond_volume_compute.0.id}"}"
+    uuid                  = "${element(openstack_blockstorage_volume_v2.beeond_volume_compute.*.id, count.index)}"
     source_type           = "volume"
     destination_type      = "volume"
     boot_index            = -1

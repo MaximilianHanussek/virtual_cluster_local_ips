@@ -25,6 +25,13 @@ NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                  
 echo "Configure hostfiles"
 cat /etc/hosts | awk '{print $1}' > /home/centos/host_ip_list                           #Get the list of all known nodes on the masternode
 
+echo "tuneMetaSpaceLowLimit                  = 200M" > /home/centos/beegfs-mgmtd.conf
+echo "tuneMetaSpaceEmergencyLimit            = 100M" >> /home/centos/beegfs-mgmtd.conf
+echo "tuneStorageSpaceLowLimit               = 200M" >> /home/centos/beegfs-mgmtd.conf
+echo "tuneStorageSpaceEmergencyLimit         = 100M" >> /home/centos/beegfs-mgmtd.conf
+
+sudo cp /home/centos/beegfs-mgmtd.conf /opt/beegfs/sbin/
+
 echo "Add connection_key to authorized_keys file"
 ssh-keygen -y -f ~/.ssh/connection_key.pem >> /home/centos/.ssh/authorized_keys		#Generate public key from temporary connection key and to authorized key file of master
 
@@ -41,6 +48,13 @@ while read host_ip; do                                                          
                 scp -i $SSH_KEY_PATH /etc/hosts centos@$host_ip:/home/centos            #Copy /etc/hosts file from masternode to home directory of new node
                 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mv /home/centos/hosts /etc/hosts   # replace old hosts file with new file, two steps are necessary to permissions
 		echo $host_ip >> /home/centos/beeond_nodefile                                   #Add host IP to beeond_nodefile to later start beeond
+
+		if ! [[ $host_ip == $MASTER_NODE_IP_LOCAL ]];
+                then
+                        scp -i $SSH_KEY_PATH /home/centos/beegfs-mgmtd.conf centos@$host_ip:/home/centos/       #Copy beegfs-mgmtd.conf file from masternode to home directory of new node
+                        ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mv /home/centos/beegfs-mgmtd.conf /opt/beegfs/sbin/beegfs-mgmtd.conf #Move beegfs-mgmtd.conf to /opt/beegfs/sbin dir
+                fi
+
                 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mkfs.xfs /dev/vdb		#Create XFS filesystem on compute nodes cinder volume
 		ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo sudo mount /dev/vdb /mnt/  	#Mount cinder volume to /mnt/
                 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo sudo chmod 777 /mnt/		#Change permissions of /mnt/ directory

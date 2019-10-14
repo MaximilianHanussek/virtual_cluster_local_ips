@@ -21,8 +21,8 @@ variable "compute_node_count" {
 variable "image_master" {
   type = "map"
   default = {
-    "name" = "unicore_master_centos_20190702"
-    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_master_centos_20190702.qcow2"
+    "name" = "unicore_master_centos_20190712"
+    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_master_centos_20190712.qcow2"
     "container_format" = "bare"
     "disk_format" = "qcow2"
    }
@@ -31,8 +31,8 @@ variable "image_master" {
 variable "image_compute" {
   type = "map"
   default = {
-    "name" = "unicore_compute_centos_20190701"
-    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_compute_centos_20190701.qcow2"
+    "name" = "unicore_compute_centos_20190719"
+    "image_source_url" = "https://s3.denbi.uni-tuebingen.de/max/unicore_compute_centos_20190719.qcow2"
     "container_format" = "bare"
     "disk_format" = "qcow2"
    }
@@ -58,7 +58,7 @@ variable "security_groups" {
 }
 
 variable "network_master" {
-  default = "denbi_uni_tuebingen_external"
+  default = "denbi_uni_tuebingen_external2"
 }
 
 
@@ -67,9 +67,6 @@ variable "network_master_local" {
 }
 
 variable "network_compute" {
-  default = [
-    {
-      name = "testint"
-    },
-]
-} 
+  default = "testint"
+}
+ 
