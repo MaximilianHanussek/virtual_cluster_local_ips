@@ -12,7 +12,7 @@ resource "openstack_blockstorage_volume_v2" "beeond_volume_compute" {
 }
 
 
-resource "openstack_compute_instance_v2" "master" {
+resource "openstack_compute_instance_v2" "master-instance" {
   name            = "${var.name_prefix}master"
   flavor_name     = "${var.flavors["master"]}"
   image_id        = "${openstack_images_image_v2.vuc-image-master.id}"
@@ -96,8 +96,8 @@ block_device {
 
   provisioner "remote-exec" {
     inline = [
-      "echo '${openstack_compute_instance_v2.master.access_ip_v4} ${var.name_prefix}master-public' >> /etc/hosts",
-      "echo '${openstack_compute_instance_v2.master.network.1.fixed_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
+      "echo '${openstack_compute_instance_v2.master-instance.access_ip_v4} ${var.name_prefix}master-public' >> /etc/hosts",
+      "echo '${openstack_compute_instance_v2.master-instance.network.1.fixed_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.0.access_ip_v4} ${var.name_prefix}compute-node-0' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.1.access_ip_v4} ${var.name_prefix}compute-node-1' >> /etc/hosts"
     ]
@@ -163,16 +163,152 @@ block_device {
     }
   }
 
+  provisioner "file" {
+    source = "../add_node_to_cluster"
+    destination = "/home/centos/add_node_to_cluster"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../add_node_to_torque"
+    destination = "/home/centos/add_node_to_torque"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../add_to_host_file"
+    destination = "/home/centos/add_to_host_file"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../update_unicore_resources"
+    destination = "/home/centos/update_unicore_resources"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+
+  provisioner "file" {
+    source = "../beeond-add-storage-node"
+    destination = "/home/centos/beeond-add-storage-node"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../remove_node_from_cluster"
+    destination = "/home/centos/remove_node_from_cluster"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../delete_node_from_torque"
+    destination = "/home/centos/delete_node_from_torque"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../delete_from_host_file"
+    destination = "/home/centos/delete_from_host_file"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../beeond-remove-storage-node"
+    destination = "/home/centos/beeond-remove-storage-node"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
   provisioner "remote-exec" {
     inline = [
       "sudo mv /home/centos/beeond /opt/beegfs/sbin/beeond",
       "sudo mv /home/centos/beegfs-ondemand-stoplocal /opt/beegfs//lib/beegfs-ondemand-stoplocal",
       "sudo mv /home/centos/configure_unicore /usr/local/bin/configure_unicore",
       "sudo mv /home/centos/start_initial_unicore_cluster /usr/local/bin/start_initial_unicore_cluster",
+      "sudo mv /home/centos/add_node_to_cluster /usr/local/bin/add_node_to_cluster",
+      "sudo mv /home/centos/add_node_to_torque /usr/local/bin/add_node_to_torque",
+      "sudo mv /home/centos/add_to_host_file /usr/local/bin/add_to_host_file",
+      "sudo mv /home/centos/update_unicore_resources //usr/local/bin/update_unicore_resources",
+      "sudo mv /home/centos/beeond-add-storage-node /opt/beegfs/sbin/beeond-add-storage-node",
+      "sudo mv /home/centos/remove_node_from_cluster /usr/local/bin/remove_node_from_cluster",
+      "sudo mv /home/centos/delete_node_from_torque /usr/local/bin/delete_node_from_torque",
+      "sudo mv /home/centos/delete_from_host_file /usr/local/bin/delete_from_host_file",
+      "sudo mv /home/centos/beeond-remove-storage-node /opt/beegfs/sbin/beeond-remove-storage-node",     
       "sudo chmod 777 /opt/beegfs/sbin/beeond",
       "sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal",
       "sudo chmod 777 /usr/local/bin/configure_unicore",
-      "sudo chmod 777 /usr/local/bin/start_initial_unicore_cluster"
+      "sudo chmod 777 /usr/local/bin/start_initial_unicore_cluster",
+      "sudo chmod 777 /usr/local/bin/add_node_to_cluster",
+      "sudo chmod 777 /usr/local/bin/add_node_to_torque",
+      "sudo chmod 777 /usr/local/bin/add_to_host_file",
+      "sudo chmod 777 /usr/local/bin/update_unicore_resources",
+      "sudo chmod 777 /opt/beegfs/sbin/beeond-add-storage-node",
+      "sudo chmod 777 /usr/local/bin/remove_node_from_cluster",
+      "sudo chmod 777 /usr/local/bin/delete_node_from_torque",
+      "sudo chmod 777 /usr/local/bin/delete_from_host_file",
+      "sudo chmod 777 /opt/beegfs/sbin/beeond-remove-storage-node"
     ]
 
     connection {
@@ -221,7 +357,6 @@ block_device {
   }
 
 block_device {
-#    uuid		  = "${count.index != "0" ? "${openstack_blockstorage_volume_v2.beeond_volume_compute.1.id}" : "${openstack_blockstorage_volume_v2.beeond_volume_compute.0.id}"}"
     uuid                  = "${element(openstack_blockstorage_volume_v2.beeond_volume_compute.*.id, count.index)}"
     source_type           = "volume"
     destination_type      = "volume"
