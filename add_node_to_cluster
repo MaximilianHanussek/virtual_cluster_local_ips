@@ -16,6 +16,20 @@ SSH_KEY_PATH=$3                                                         #Get pat
 echo "Updating Hostfiles"
 add_to_host_file $IP_ADDED_HOST $NAME_ADDED_HOST $SSH_KEY_PATH          #Execute add_to_host_file script (/usr/local/bin/) to update the /etc/hosts file
 
+echo "Creating filesystem and mounting volume on new node"
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mkfs.xfs /dev/vdb
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mount /dev/vdb /mnt/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /mnt/
+
+echo "Adding beeond files to new node"
+scp -i $SSH_KEY_PATH /opt/beegfs/sbin/beeond centos@$IP_ADDED_HOST:/home/centos
+scp -i $SSH_KEY_PATH /opt/beegfs/lib/beegfs-ondemand-stoplocal centos@$IP_ADDED_HOST:/home/centos
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mv /home/centos/beeond /opt/beegfs/sbin/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mv /home/centos/beegfs-ondemand-stoplocal /opt/beegfs/lib/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /opt/beegfs/sbin/beeond
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal
+
+
 MGMT_IP=$(head -n 1 /home/centos/beeond_nodefile)                       #Get IP of the management node of the beegfs filesystem
 echo $MGMT_IP > /home/centos/beeond_nodefile2                           #Write management IP to file
 echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile2                    #Add new node IP to same file
