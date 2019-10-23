@@ -13,6 +13,12 @@ IP_ADDED_HOST=$1                                                        #Get IP 
 NAME_ADDED_HOST=$2                                                      #Get hostname of new node
 SSH_KEY_PATH=$3                                                         #Get path to ssh key of new node
 
+echo "$IP_ADDED_HOST"
+echo "$NAME_ADDED_HOST"
+echo "$SSH_KEY_PATH"
+
+sleep 20								#Wait until host is available per SSH
+
 echo "Updating Hostfiles"
 add_to_host_file $IP_ADDED_HOST $NAME_ADDED_HOST $SSH_KEY_PATH          #Execute add_to_host_file script (/usr/local/bin/) to update the /etc/hosts file
 

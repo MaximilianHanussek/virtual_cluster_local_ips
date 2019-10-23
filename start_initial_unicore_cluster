@@ -21,6 +21,9 @@ ONE_GB_IN_BYTE=1073741824											#Save value for 1GB in Bytes (Base 1024)
 NODE_MEM_MAX="$(expr $NODE_MEM_TOTAL - $ONE_GB_IN_BYTE)"							#Get final max RAM value with 1GB safety
 NODE_MEM_DEFAULT=$NODE_MEM_MAX                                                          			#Set value of maximal RAM per node also as default
 
+### Clean up known_hosts file ###
+sudo rm -f /home/centos/.ssh/known_hosts                                #Delete known_hosts on master node file to avoid connection problems 
+
 ### Configure hostfiles, authorized_keys file and beeond_file ###
 echo "Configure hostfiles"
 cat /etc/hosts | awk '{print $1}' > /home/centos/host_ip_list                           #Get the list of all known nodes on the masternode
