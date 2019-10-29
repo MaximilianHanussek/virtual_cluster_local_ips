@@ -63,10 +63,10 @@ variable "network_master" {
 
 
 variable "network_master_local" {
-  default = "testint"
+  default = "nat"
 }
 
 variable "network_compute" {
-  default = "testint"
+  default = "nat"
 }
  
