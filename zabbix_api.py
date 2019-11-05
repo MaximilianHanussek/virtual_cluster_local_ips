@@ -2,7 +2,8 @@ import os
 from pyzabbix.api import ZabbixAPI
 
 # Create ZabbixAPI class instance
-zapi = ZabbixAPI(url='http://' + str(os.environ["MASTER_IP_PUBLIC"]) + '/zabbix/', user='Admin', password='zabbix')
+pasted_URL = 'http://' + str(os.environ["MASTER_IP_PUBLIC"]) + '/zabbix/'
+zapi = ZabbixAPI(url=str(pasted_URL), user='admin', password='zabbix')
 
 # Create new hostgroup
 result1 = zapi.do_request('hostgroup.create',
@@ -11,7 +12,20 @@ result1 = zapi.do_request('hostgroup.create',
 })
 
 # Get id of newly created hostgroup
-parsed_group_id = result1['result']['groupids'][0]
+parsed_group_id_unicore = result1['result']['groupids'][0]
+
+# Get id of discovered hostgroup
+result_discovered_host_groups = zapi.do_request('hostgroup.get',
+{
+	'filter': {'name': ['Discovered hosts']}
+})
+
+print result_discovered_host_groups
+
+# Get id of discovered hostgroup
+parsed_group_id_discovered = result_discovered_host_groups['result'][0]['groupid']
+
+print parsed_group_id_discovered
 
 # Get templateid of Linux Template
 result2 = zapi.do_request('template.get',
@@ -24,13 +38,14 @@ parsed_template_id = result2['result'][0]['templateid']
 # Create new action 
 result3 = zapi.do_request('action.create',
 {
-'name'          : 'Discover new compute nodes'
+'name'          : 'Discover new compute nodes',
 'esc_period'    : '2m',
 'eventsource'   : 2,
 'filter'        : {'evaltype': 0,
                    'conditions': [{'conditiontype': 22, 'operator': 2, 'value': 'compute'}]},
-                   'operations': [{'operationtype': 4, 'opgroup': [{'groupid': parsed_group_id}]},
-                      		 {'operationtype': 6, 'optemplate': [{'templateid': parsed_template_id}]}
+                   'operations': [{'operationtype': 4, 'opgroup': [{'groupid': parsed_group_id_unicore}]},
+                      		 {'operationtype': 6, 'optemplate': [{'templateid': parsed_template_id}]},
+				 {'operationtype': 5, 'opgroup': [{'groupid': parsed_group_id_discovered}]}
 				 ]
                   })
 

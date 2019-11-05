@@ -110,3 +110,6 @@ sudo env "PATH=$PATH" qmgr -c "set server auto_node_np = True"                  
 ### Configure and Start UNICORE components ###
 echo "Configuring and starting UNICORE components"
 sh configure_unicore $MASTER_NODE_IP_LOCAL $TOTAL_CPUS_MAX $NODE_CPUS_MAX $NODE_MEM_MAX $NODES_MAX $MASTER_NODE_IP_PUBLIC
+
+### Set up Zabbix monitoring system ###
+sh setup_zabbix $MASTER_NODE_IP_PUBLIC $MASTER_NODE_IP_LOCAL $SSH_KEY_PATH

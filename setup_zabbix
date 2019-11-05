@@ -71,7 +71,7 @@ sudo yum install -y zabbix-server-mysql zabbix-web-mysql zabbix-agent zabbix-get
 # Import initial DB schema
 zcat /usr/share/doc/zabbix-server-mysql*/create.sql.gz | mysql --user=zabbix --password=zabbix --database=zabbix
 
-# Move zabbix frontend config file to correct place
+# Move zabbix frontend config file to correct place before zabbix-server starts (avoids GUI configuration)
 sudo mv /home/centos/zabbix.conf.php /etc/zabbix/web/zabbix.conf.php
 
 # Give correct credentials to fronten config file
@@ -83,9 +83,6 @@ sudo sed -i '/^DBName/c\DBName=zabbix' /etc/zabbix/zabbix_server.conf
 sudo sed -i '/^DBUser/c\DBUser=zabbix' /etc/zabbix/zabbix_server.conf
 sudo sed -i '/^# DBPassword/c\DBPassword=zabbix' /etc/zabbix/zabbix_server.conf
 sudo sed -i "/^# SourceIP=/c\SourceIP=$MASTER_IP_LOCAL" /etc/zabbix/zabbix_server.conf
-
-# Configure zabbix frontend before zabbix-server starts (avoids GUI configuration)
-sudo mv /home/centos/zabbix.conf.php /etc/zabbix/web/
 
 # Restart webserver and zabbix-server
 sudo systemctl restart httpd zabbix-server
@@ -120,7 +117,7 @@ while read host_ip; do
 	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo rpm -i /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
 #	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo yum clean all
 #	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo yum install zabbix-agent -y
-	scp -i $SSH_KEY_PATH /etc/zabbix/zabbix_agentd.conf centos@$host_ip:/home/centos/zabbix/zabbix_agentd.conf
+	scp -i $SSH_KEY_PATH /etc/zabbix/zabbix_agentd.conf centos@$host_ip:/home/centos/zabbix_agentd.conf
 	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mv /home/centos/zabbix_agentd.conf /etc/zabbix/zabbix_agentd.conf
 	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo systemctl enable zabbix-agent
 	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo systemctl start zabbix-agent
