@@ -20,12 +20,8 @@ result_discovered_host_groups = zapi.do_request('hostgroup.get',
 	'filter': {'name': ['Discovered hosts']}
 })
 
-print result_discovered_host_groups
-
 # Get id of discovered hostgroup
 parsed_group_id_discovered = result_discovered_host_groups['result'][0]['groupid']
-
-print parsed_group_id_discovered
 
 # Get templateid of Linux Template
 result2 = zapi.do_request('template.get',

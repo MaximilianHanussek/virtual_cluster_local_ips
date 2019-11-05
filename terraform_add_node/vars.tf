@@ -43,6 +43,6 @@ variable "security_groups" {
 }
 
 variable "network" {
-  default = "testint"
+  default = "nat"
 }
 

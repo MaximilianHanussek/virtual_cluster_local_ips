@@ -13,10 +13,7 @@ IP_ADDED_HOST=$1                                                        #Get IP 
 NAME_ADDED_HOST=$2                                                      #Get hostname of new node
 SSH_KEY_PATH=$3                                                         #Get path to ssh key of new node
 
-echo "$IP_ADDED_HOST"
-echo "$NAME_ADDED_HOST"
-echo "$SSH_KEY_PATH"
-
+echo "Wait 20s until SSH connection is available"
 sleep 20								#Wait until host is available per SSH
 
 echo "Updating Hostfiles"
