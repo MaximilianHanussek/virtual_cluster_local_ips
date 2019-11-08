@@ -36,10 +36,10 @@ The following information will help you to setup and use the virtual UNICORE clu
 
 ### 1. Download/clone the git repository
 In order to use the sources you need to download or clone this git repository to your local machine.
-<pre>git clone https://github.com/MaximilianHanussek/virtual_cluster.git</pre>
+<pre>git clone https://github.com/MaximilianHanussek/virtual_cluster_local_ips.git</pre>
 
 You can also download it as a ZIP archive from the website of the repository or via `wget`
-<pre>wget https://github.com/MaximilianHanussek/virtual_cluster/archive/master.zip</pre>
+<pre>wget https://github.com/MaximilianHanussek/virtual_cluster_local_ips/archive/master.zip</pre>
 you will find it as `master.zip`.
 
 ### 2. Source openstack credentials and initialize
@@ -163,4 +163,4 @@ For the case you want to free some resources and want to downgarde your current 
 Please change into the root directory of the repository and run the following script:
 <pre>sh stop_node /path/to/rc/file</pre>
 
-The lastly added node will be chosen to be removed from the cluster. First no new jobs are allowed to be scheduled onn the node for removal. After all currently running jobs on this node are finished the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
+The lastly added node will be chosen to be removed from the cluster. First no new jobs are allowed to be scheduled onn the node for removal. After all currently running jobs on this node are finished the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
