@@ -14,7 +14,7 @@ result1 = zapi.do_request('hostgroup.create',
 # Get id of newly created hostgroup
 parsed_group_id_unicore = result1['result']['groupids'][0]
 
-# Get id of discovered hostgroup
+# Get dictionary of discovered hostgroup
 result_discovered_host_groups = zapi.do_request('hostgroup.get',
 {
 	'filter': {'name': ['Discovered hosts']}

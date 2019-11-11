@@ -12,11 +12,19 @@
 NODE_NAME_REMOVED=$1									#Get hostname of the node which has to be removed
 SSH_KEY_PATH=$2										#Get path to the SSH key of the removing VM
 
+export NODE_NAME_REMOVED
+export SSH_KEY_PATH
+
 echo "Removing node from torque"
 delete_node_from_torque $NODE_NAME_REMOVED 						#Run script to remove the node from TORQUE batch system
         
 echo "Removing node from beegfs filesystem (BeeOND)"
 /opt/beegfs/sbin/beeond-remove-storage-node $NODE_NAME_REMOVED $SSH_KEY_PATH      	#Run script to remove the node from the beegfs filesystem 
+
+echo "Updating Zabbix Hosts"
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME_REMOVED sudo systemctl disble zabbix-agent
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME_REMOVED sudo systemctl stop zabbix-agent
+python /usr/local/bin/delete_node_from_zabbix.py
 
 echo "Updating hosts files"
 delete_from_host_file $NODE_NAME_REMOVED $SSH_KEY_PATH					#Run script to update the /etc/hosts files of all nodes and clear it for the deleted node

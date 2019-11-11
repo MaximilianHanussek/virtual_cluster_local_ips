@@ -307,7 +307,7 @@ block_device {
     }
   }
 
-provisioner "file" {
+  provisioner "file" {
     source = "../zabbix.conf.php"
     destination = "/home/centos/zabbix.conf.php"
 
@@ -319,6 +319,21 @@ provisioner "file" {
       host        = "${self.access_ip_v4}"
     }
   }
+
+  provisioner "file" {
+    source = "../delete_node_from_zabbix.py"
+    destination = "/home/centos/delete_node_from_zabbix.py"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+
 
 
   provisioner "remote-exec" {
@@ -338,6 +353,7 @@ provisioner "file" {
       "sudo mv /home/centos/beeond-remove-storage-node /opt/beegfs/sbin/beeond-remove-storage-node",     
       "sudo mv /home/centos/setup_zabbix /usr/local/bin/setup_zabbix",
       "sudo mv /home/centos/zabbix_api.py /usr/local/bin/zabbix_api.py",
+      "sudo mv /home/centos/delete_node_from_zabbix.py /usr/local/bin/delete_node_from_zabbix.py",
       "sudo chmod 777 /opt/beegfs/sbin/beeond",
       "sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal",
       "sudo chmod 777 /usr/local/bin/configure_unicore",
@@ -353,6 +369,7 @@ provisioner "file" {
       "sudo chmod 777 /opt/beegfs/sbin/beeond-remove-storage-node",
       "sudo chmod 777 /usr/local/bin/setup_zabbix",
       "sudo chmod 777 /usr/local/bin/zabbix_api.py",
+      "sudo chmod 777 /usr/local/bin/delete_node_from_zabbix.py"
     ]
 
     connection {
