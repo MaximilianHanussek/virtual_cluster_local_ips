@@ -125,9 +125,19 @@ If everything looks reasonable we can start with the real action executing
 
 This command will first set up the required volumes, then the security group. Afterwards the required images will be downloaded and imported into the OpenStack environment, which can take some time dependent on the network connection (compute image: 1.93GB, master image: 4.40GB). The next step will fire up the VMs and also attaches the cinder volumes. A subsequent script will mount the volumes, create one time SSH keys and distribute them on the different VMs so they can talk with each other without using your general private key for obvious security reasons. In the end the shared file system based on BeeOND will be started, the TORQUE cluster is started and in the end the UNICORE components. On top the Zabbix Monitoring system is set up. All this will take around 5-10 minutes.
 In the end you will have a fully setup UNICORE cluster that you can access like explained in Chapter 5.
-But of course you can use just the usual TORQUE batch system without UNICORE and submitting jobs to a queue. 
+But of course you can use just the usual TORQUE batch system without UNICORE and submitting jobs to a queue.
 
-### 5. Access your UNICORE cluster
+### 5. Access Zabbix Webinterface
+The setup Zabbix webinterface can be found under the following URL using the public IP of the master node:
+</pre>http://42.42.42.42/zabbix</pre>
+
+The set login credentials are:
+Username: admin
+Password: zabbix
+
+If you are just using the inital cluster without adding and removing nodes you can also change the password. If you want to use the add and remove procedures please **do not change** the credentials, as they are required for the Zabbix API access in order to remove nodes from Zabbix. 
+
+### 6. Access your UNICORE cluster
 There are different ways to access the UNICORE cluster. One possibility is to use UNICORE Commandline Client (UCC) which can be downloaded [here](https://sourceforge.net/projects/unicore/files/Clients/Commandline%20Client/7.13.0/). The second possibility is to use the UNICORE Rich Client (URC), you can donwload [here](https://sourceforge.net/projects/unicore/files/Clients/GUI%20Client/7.4.1/). In this instructions we will focus on the second possibility as this is the more convenient one.
 
 In order to use the URC follow the steps below:
@@ -149,7 +159,7 @@ Click on the play button chose the available worjkflow engine and click on finis
 
 For further complex workflows and further explanations on UNICORE we refer to the official documentation which you can find [here](https://www.unicore.eu/documentation/).
 
-### 6. Start and add new node to existing cluster
+### 7. Start and add new node to existing cluster
 It might happen that the initial cluster resources are not sufficient for the applied workload and more nodes could solve the problem faster. Or you need some smaller nodes or larger nodes for different kind of workloads. For this case we provide a mechanism that will automatically start a new node (via terraform). Add the new 
 node to the already existing BeeOND file system and also make it available as a resource for the batch system (TORQUE).
 and for UNICORE and also makes Zabbix aware of the new available resources. 
@@ -157,9 +167,9 @@ In order to add a new node you only have to go in the root repository directory 
 <pre>sh start_up_new_node /path/to/rc/file</pre>
 
 After some minutes you will have a new node added to your existng cluster.
+The new node is also added to the resources of the initial cluster. This means terraform is still tracking the whole cluster and not the intital cluster and added nodes. This implementation allows you to destroy the whole cluster without any thoughts about the added and removed nodes.  
 
-
-### 7. Remove a node from the cluster
+### 8. Remove a node from the cluster
 For the case you want to free some resources and want to downgrade your current cluster we also provide a removing procedure.
 Please change into the root directory of the repository and run the following script:
 <pre>sh stop_node /path/to/rc/file</pre>
