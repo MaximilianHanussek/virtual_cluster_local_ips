@@ -128,7 +128,7 @@ In the end you will have a fully setup UNICORE cluster that you can access like 
 But of course you can use just the usual TORQUE batch system without UNICORE and submitting jobs to a queue.
 
 ### 5. Access Zabbix Webinterface
-The setup Zabbix webinterface can be found under the following URL using the public IP of the master node:
+The setup Zabbix webinterface can be found under the following URL replacing the example IP (42.42.42.42) with the public IP of your created master node:
 </pre>http://42.42.42.42/zabbix</pre>
 
 The set login credentials are:
