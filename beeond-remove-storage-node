@@ -55,5 +55,5 @@ sudo beegfs-ctl --removenode --nodetype=storage --mount=/beeond $BEEGFS_NODE_ID	
 
 # Stop beeond processes on the removed node and delete remaining data
 echo $NODE_NAME > /home/centos/beeond_remove_nodefile							#Create temporary nodefile for the node to remove
-beeond stop -n /home/centos/beeond_remove_nodefile -L -d -a $SSH_KEY_PATH -z centos			#Stop beeond processes on node 
+beeond stop -i /home/centos/beeond.statusfile -n /home/centos/beeond_remove_nodefile -L -d -a $SSH_KEY_PATH -z centos			#Stop beeond processes on node 
 rm /home/centos/beeond_remove_nodefile									#Delete temporary nodefile 

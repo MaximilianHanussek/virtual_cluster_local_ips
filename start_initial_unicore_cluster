@@ -84,7 +84,7 @@ rm -f /home/centos/host_ip_list                                                 
 
 ### Start BeeOND filesystem ###
 echo "Starting BeeOND"
-beeond start -f /opt/beegfs/sbin -n /home/centos/beeond_nodefile -d /mnt/ -c /beeond/ -a $SSH_KEY_PATH -z centos    #Starting BeeOND file system with additional config file in /opt/beegfs/sbin to set the storage pool thresholds correctly
+beeond start -i /home/centos/beeond.statusfile -f /opt/beegfs/sbin -n /home/centos/beeond_nodefile -d /mnt/ -c /beeond/ -a $SSH_KEY_PATH -z centos    #Starting BeeOND file system with additional config file in /opt/beegfs/sbin to set the storage pool thresholds correctly
 
 
 ### Add nodes to torque cluster ###

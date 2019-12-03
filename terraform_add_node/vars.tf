@@ -7,7 +7,7 @@ variable "beeond_storage_backend" {
 }
 
 variable "flavors" {
-  default = "de.NBI small"
+  default = "de.NBI medium"
 }
 
 
