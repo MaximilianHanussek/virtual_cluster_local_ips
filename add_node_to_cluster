@@ -34,9 +34,9 @@ ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo c
 
 
 MGMT_IP=$(head -n 1 /home/centos/beeond_nodefile)                       #Get IP of the management node of the beegfs filesystem
-echo $MGMT_IP > /home/centos/beeond_nodefile2                           #Write management IP to file
-echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile2                    #Add new node IP to same file
-
+echo $MGMT_IP > /home/centos/beeond_nodefile2                           #Write management IP to temporary nodefile
+echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile2                    #Add new node IP to same temporary nodefile
+echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile			#Add new node IP to the general beeond nodefile to keep track on it in case of shutting down the whole filesystem
 
 echo "Adding node to beegfs filesystem"
 /opt/beegfs/sbin/beeond-add-storage-node start -i /home/centos/beeond.statusfile -f /etc/beegfs/ -n /home/centos/beeond_nodefile2 -d /mnt/ -c /beeond/ -a $SSH_KEY_PATH -z centos #Start beeond script and add node to existing beegfs filesystem

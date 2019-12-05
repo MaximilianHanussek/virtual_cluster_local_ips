@@ -13,6 +13,8 @@ NODE_NAME_REMOVED=$1									#Get hostname of the node which has to be removed
 SSH_KEY_PATH=$2										#Get path to the SSH key of the removing VM
 
 MASTER_NODE_IP_PUBLIC="$(cat /etc/hosts | grep master-public | awk {'print $1'})"       #Get master node IP public (unicore-master)
+NODE_IP_REMOVED="$(cat /etc/hosts | grep $NODE_NAME_REMOVED | awk {'print $1'})"	#Get node IP from node to be removed
+
 
 export NODE_NAME_REMOVED
 export SSH_KEY_PATH
@@ -24,6 +26,9 @@ delete_node_from_torque $NODE_NAME_REMOVED 						#Run script to remove the node 
         
 echo "Removing node from beegfs filesystem (BeeOND)"
 /opt/beegfs/sbin/beeond-remove-storage-node $NODE_NAME_REMOVED $SSH_KEY_PATH      	#Run script to remove the node from the beegfs filesystem 
+
+echo "Removing node from beeond_nodefile"
+sed -i "/$NODE_IP_REMOVED/d" /home/centos/beeond_nodefile
 
 echo "Updating Zabbix Hosts"
 ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME_REMOVED sudo systemctl disable zabbix-agent
