@@ -3,6 +3,22 @@
 #This wrapper script parses all relevant information and triggers the node adding procedure
 
 rc_file_path=$1					#Get OpenStack rc file path as cmd line input
+
+
+#Check if rc_file_path has been entered and a file can be found
+if [ -z "$1" ]
+then
+    	echo "You have not specified the path to the OpenStack RC File. Please specify the file path"
+	exit 1
+	
+elif ! [ -f "$1" ]
+then
+	echo "You have specified a path to the OpenStack RC File, but no file can be found under this path. Plese check and enter the correct file path"
+	exit 1
+else
+	echo "OpenStack RC File path is specififed and path is valid"
+fi
+
 sh ./get_next_compute_node_number.sh 		#Start script to parse out next node number
 next_node_number=$(cat next_node_number)        #Save next node number in variable
 cd terraform_add_node/				#Change to add node directory
