@@ -45,6 +45,26 @@ result3 = zapi.do_request('action.create',
 				 ]
                   })
 
+# Get id of swap space trigger of Template OS Linux
+result4 = zapi.do_request('trigger.get',
+{
+	'output': ['triggerid', 'description'],
+	'templateids': parsed_template_id	
+})
+
+for i in range(len(result4['result'])):
+	if result4['result'][i]['description'] == "Lack of free swap space on {HOST.NAME}":
+		array_entry = i
+
+parsed_trigger_id = result4['result'][array_entry]['triggerid']
+
+# Disable swap space trigger
+result5 = zapi.do_request('trigger.update',
+{
+	'triggerid': parsed_trigger_id,
+	'status': 1
+})
+
+
 # Logout from Zabbix
 zapi.user.logout()
-
